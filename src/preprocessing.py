@@ -15,7 +15,7 @@ for file in pos_files:
     file_tokens = file.split('_')
     r_id = file_tokens[0]
     stars = file_tokens[1].split('.')[0]
-    label = 'pos'
+    label = 0
     with open(input_dir_pos+file, 'r') as file:
         review = file.read()
         json_obj = {
@@ -31,7 +31,7 @@ for file in neg_files:
     file_tokens = file.split('_')
     r_id = file_tokens[0]
     stars = file_tokens[1].split('.')[0]
-    label = 'neg'
+    label = 1
     with open(input_dir_neg+file, 'r') as file:
         review = file.read()
         json_obj = {
