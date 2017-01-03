@@ -19,7 +19,8 @@ public class IRProjectApp {
 
         Dataset<Row> data = spark.read().json(inputDirectory);
 
-        Tokenizer tokenizer = new Tokenizer().setInputCol("review").setOutputCol("words");
+        String regex = "(\\<.+\\>|\\W|[.,?:;!()])+";
+        RegexTokenizer tokenizer = new RegexTokenizer().setInputCol("review").setOutputCol("words").setPattern(regex);
         Dataset<Row> wordsData = tokenizer.transform(data);
 
         StopWordsRemover swr = new StopWordsRemover().setInputCol("words").setOutputCol("woutSWords");
@@ -28,7 +29,7 @@ public class IRProjectApp {
         NGram ngram = new NGram().setN(3).setInputCol("woutSWords").setOutputCol("ngrams");
         wordsData = ngram.transform(wordsData);
 
-        HashingTF hashingTF = new HashingTF().setInputCol("ngrams").setOutputCol("rawFeatures"); //.setNumFeatures(100);
+        HashingTF hashingTF = new HashingTF().setInputCol("ngrams").setOutputCol("rawFeatures"); //.setNumFeatures(1000);
         Dataset<Row> rawFeaturizedData = hashingTF.transform(wordsData);
 
         IDF idf = new IDF().setInputCol("rawFeatures").setOutputCol("features");
