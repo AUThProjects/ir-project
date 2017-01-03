@@ -12,6 +12,7 @@ import org.apache.spark.sql.SparkSession;
 public class IRProjectApp {
     public static void main(String[] args) {
         String inputDirectory = "src/main/resources/data.json";
+        String outputDirectory = "src/main/resources/tfIdfData.json";
         SparkSession spark = SparkSession.builder()
                                          .appName("IRProject")
                                          .getOrCreate();
@@ -34,6 +35,8 @@ public class IRProjectApp {
         IDFModel idfModel = idf.fit(rawFeaturizedData);
         Dataset<Row> featurizedData = idfModel.transform(rawFeaturizedData);
 
-        featurizedData.select("label", "features").show();
+//        featurizedData.select("label", "features").show();
+
+        featurizedData.write().parquet(outputDirectory);
     }
 }
