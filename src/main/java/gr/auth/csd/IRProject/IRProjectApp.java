@@ -45,7 +45,7 @@ public class IRProjectApp {
 //        featurizedData.select("label", "features").show();
 
         featurizedData.write().parquet(outputDirectory);
-        generateSVMFile(ioSVMDirectory, data);
+        generateSVMFile(ioSVMDirectory, featurizedData);
     }
 
     private static void generateSVMFile(String ioSVMDirectory, Dataset<Row> data) {
@@ -64,6 +64,6 @@ public class IRProjectApp {
             }
             return label + " " + String.join(" ", toReturn);
         }, Encoders.STRING());
-        ds.write().text(ioSVMDirectory);
+        ds.coalesce(1).write().text(ioSVMDirectory);
     }
 }
