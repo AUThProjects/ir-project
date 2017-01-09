@@ -3,10 +3,7 @@ package gr.auth.csd.IRProject.unsupervised;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.spark.ml.clustering.BisectingKMeans;
-import org.apache.spark.ml.clustering.BisectingKMeansModel;
-import org.apache.spark.ml.clustering.LDA;
-import org.apache.spark.ml.clustering.LDAModel;
+import org.apache.spark.ml.clustering.*;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -17,10 +14,10 @@ import java.io.IOException;
 /**
  * Created by steve on 09/01/2017.
  */
-public class BisectingKmeansAlgorithm {
+public class GaussianMixtureAlgorithm {
     public static void main(String[] args) {
         String inputDirectory = "src/main/resources/tfIdfData.json";
-        String outputDirectory = "src/main/resources/bisectKmeansModel";
+        String outputDirectory = "src/main/resources/GaussianMixtureModel";
 
         SparkSession spark = SparkSession.builder()
                 .appName("IRProjectKMeans")
@@ -35,13 +32,9 @@ public class BisectingKmeansAlgorithm {
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
 
-        BisectingKMeans bkm = new BisectingKMeans().setK(2).setSeed(1);
-        BisectingKMeansModel model = bkm.fit(trainSet);
 
-        // Evaluate clustering.
-        double cost = model.computeCost(trainSet);
-        System.out.println("Within Set Sum of Squared Errors = " + cost);
-
+        GaussianMixture gmm = new GaussianMixture().setK(2);
+        GaussianMixtureModel model = gmm.fit(trainSet);
 
         try {
             model.save(outputDirectory);
