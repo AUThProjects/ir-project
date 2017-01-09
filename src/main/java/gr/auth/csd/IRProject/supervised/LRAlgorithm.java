@@ -33,25 +33,20 @@ public class LRAlgorithm {
         logger.setLevel(Level.WARN);
         Dataset<Row> data = spark.read().parquet(inputDirectory);
         
-        Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 1000);
+        Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 123321);
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
 
-        LogisticRegression lr = new LogisticRegression().setPredictionCol("prediction").setFeaturesCol("features").setMaxIter(100);
-        ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(lr.regParam(), new double[] {0.1, 0.01})
-                .addGrid(lr.elasticNetParam(), new double[] {0.1, 0.01})
-                .build();
+        LogisticRegression lr = new LogisticRegression().setPredictionCol("prediction").setFeaturesCol("features").setMaxIter(200);
+        ParamMap[] paramGrid = new ParamGridBuilder().build();
+//        ParamMap[] paramGrid = new ParamGridBuilder()
+//                .addGrid(lr.regParam(), new double[] {0.1, 0.01})
+//                .addGrid(lr.elasticNetParam(), new double[] {0.1, 0.01})
+//                .build();
 
-
-//        SVMWithSGD svm = new SVMWithSGD();
-//        svm.optimizer()
-//           .setNumIterations(200)
-//           .setRegParam(0.1)
-//           .setUpdater(new L1Updater());
 
         CrossValidator cv = new CrossValidator()
-                .setEstimator(lr)
+                .setEstimator(lr.setRegParam(0.05))
                 .setEvaluator(new BinaryClassificationEvaluator().setRawPredictionCol("prediction"))
                 .setEstimatorParamMaps(paramGrid).setNumFolds(3);  // Use 3+ in practice
 
