@@ -3,8 +3,8 @@
 import os
 import json
 
-input_dir = '/tmp/ir-project/data/train/'
-output_file = '/tmp/ir-project/consolidated/data.json'
+input_dir = './main/resources/data/train/'
+output_file = './main/resources/data.json'
 input_dir_pos = input_dir+'pos/'
 input_dir_neg = input_dir+'neg/'
 

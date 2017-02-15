@@ -10,7 +10,8 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "2.0.1" % "provided",
   "org.apache.spark" %% "spark-sql" % "2.0.1" % "provided",
   "org.apache.spark" %% "spark-mllib" % "2.0.1" % "provided",
-  "net.liftweb" %% "lift-json" % "2.6.3"
+  "net.liftweb" %% "lift-json" % "2.6.3",
+  "org.apache.commons" % "commons-io" % "1.3.2"
 )
 
 assemblyMergeStrategy in assembly := {
