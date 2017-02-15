@@ -29,13 +29,14 @@ public class IRProjectApp {
         RegexTokenizer tokenizer = new RegexTokenizer().setInputCol("review").setOutputCol("words").setPattern(regex);
         Dataset<Row> wordsData = tokenizer.transform(data);
 
-        StopWordsRemover swr = new StopWordsRemover().setInputCol("words").setOutputCol("woutSWords");
+        String[] stopWords = new String[]{"i","me","my","myself","we","our","ours","ourselves","you","your","yours","yourself","yourselves","he","him","his","himself","she","her","hers","herself","it","its","itself","they","them","their","theirs","themselves","what","which","who","whom","this","that","these","those","am","is","are","was","were","be","been","being","have","has","had","having","do","does","did","doing","a","an","the","and","but","if","or","because","as","until","while","of","at","by","for","with","about","against","between","into","through","during","before","after","above","below","to","from","up","down","in","out","on","off","over","under","again","further","then","once","here","there","when","where","why","how","all","any","both","each","few","more","most","other","some","such","only","own","same","so","than","too","very","s","t","can","will","just","don","should","now","d","ll","m","o","re","ve","y"};
+        StopWordsRemover swr = new StopWordsRemover().setStopWords(stopWords).setInputCol("words").setOutputCol("woutSWords");
         wordsData = swr.transform(wordsData);
 
-//        NGram ngram = new NGram().setN(2).setInputCol("woutSWords").setOutputCol("ngrams");
-//        wordsData = ngram.transform(wordsData);
+        NGram ngram = new NGram().setN(2).setInputCol("woutSWords").setOutputCol("ngrams");
+        wordsData = ngram.transform(wordsData);
 
-        HashingTF hashingTF = new HashingTF().setInputCol("woutSWords").setOutputCol("rawFeatures"); //.setNumFeatures(1000);
+        HashingTF hashingTF = new HashingTF().setInputCol("ngrams").setOutputCol("rawFeatures"); //.setNumFeatures(1000);
         Dataset<Row> rawFeaturizedData = hashingTF.transform(wordsData);
 
         IDF idf = new IDF().setInputCol("rawFeatures").setOutputCol("features");

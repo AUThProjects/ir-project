@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class LDAAlgorithm {
     public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/tfIdfData.json";
+        String inputDirectory = "src/main/resources/w2vData";
         String outputDirectory = "src/main/resources/LDAModel";
 
         SparkSession spark = SparkSession.builder()
@@ -38,7 +38,7 @@ public class LDAAlgorithm {
         Dataset<Row> testSet = datasets[1];
 
 
-        LDA lda = new LDA().setK(2).setMaxIter(50); //.setOptimizer("online");
+        LDA lda = new LDA().setFeaturesCol("w2vRes").setK(2).setMaxIter(50); //.setOptimizer("online");
         LDAModel model = lda.fit(trainSet);
         try {
             model.save(outputDirectory);
