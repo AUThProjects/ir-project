@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class GaussianMixtureAlgorithm {
     public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/tfIdfData.json";
+        String inputDirectory = "src/main/resources/w2vData";
         String outputDirectory = "src/main/resources/GaussianMixtureModel";
 
         SparkSession spark = SparkSession.builder()
@@ -33,7 +33,7 @@ public class GaussianMixtureAlgorithm {
         Dataset<Row> testSet = datasets[1];
 
 
-        GaussianMixture gmm = new GaussianMixture().setK(2);
+        GaussianMixture gmm = new GaussianMixture().setFeaturesCol("w2vRes").setK(2);
         GaussianMixtureModel model = gmm.fit(trainSet);
 
         try {

@@ -12,7 +12,7 @@ import org.apache.spark.sql.SparkSession;
 
 public class KmeansAlgorithm {
     public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/tfIdfData.json";
+        String inputDirectory = "src/main/resources/w2vData";
         SparkSession spark = SparkSession.builder()
                                          .appName("IRProjectKMeans")
                                          .getOrCreate();
@@ -25,7 +25,7 @@ public class KmeansAlgorithm {
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
 
-        KMeans kmeans = new KMeans().setK(2).setSeed(2L);
+        KMeans kmeans = new KMeans().setFeaturesCol("w2vRes").setK(2).setSeed(2L);
         KMeansModel model = kmeans.fit(trainSet);
 
         Dataset<Row> predictionsTest = model.transform(testSet);
