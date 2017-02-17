@@ -18,18 +18,23 @@ import org.apache.spark.sql.SparkSession;
  * After identifying the data clusters, we use majority vote to determine which class it belongs to.
  */
 public class LDAAlgorithm {
-    public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/w2vData";
-        String outputDirectory = "src/main/resources/LDAModel";
+    static String inputDirectory = "src/main/resources/w2vData";
+    static String outputDirectory = "src/main/resources/LDAModel";
 
+    static Logger logger;
+    static {
+        logger = LogManager.getRootLogger();
+        logger.setLevel(Level.WARN);
+    }
+
+    public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
                 .appName("IRProjectLDA")
                 .getOrCreate();
-        Logger logger = LogManager.getRootLogger();
-        logger.setLevel(Level.WARN);
 
         Dataset<Row> data = spark.read().parquet(inputDirectory);
 
+        // 90-10 hold-out validation
         Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 123321);
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
@@ -43,11 +48,13 @@ public class LDAAlgorithm {
             logger.log(Level.ERROR, e.getMessage());
         }
 
+        // Display log likelihood and perplexity metrics, in DEBUG mode.
         double ll = model.logLikelihood(trainSet);
         double lp = model.logPerplexity(trainSet);
         logger.log(Level.DEBUG, "The lower bound on the log likelihood of the entire corpus: " + ll);
         logger.log(Level.DEBUG, "The upper bound bound on perplexity: " + lp);
 
+        // Saving LDA model.
         try {
             model.save(outputDirectory);
         }
@@ -82,6 +89,7 @@ public class LDAAlgorithm {
         double accuracyOnTestSet;
         double accuracyOnTrainSet;
 
+        // Using majority vote to assign clusters to classes.
         if (samePrctTrain < 0.5) {
             accuracyOnTrainSet = 1 - samePrctTrain;
             accuracyOnTestSet = 1 - samePrctTest;

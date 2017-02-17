@@ -16,10 +16,17 @@ import org.apache.spark.sql.SparkSession;
  * After identifying the data clusters, we use majority vote to determine which class it belongs to.
  */
 public class GaussianMixtureAlgorithm {
-    public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/w2vData";
-        String outputDirectory = "src/main/resources/GaussianMixtureModel";
 
+    static String inputDirectory = "src/main/resources/w2vData";
+    static String outputDirectory = "src/main/resources/GaussianMixtureModel";
+
+    static Logger logger;
+    static {
+        logger = LogManager.getRootLogger();
+        logger.setLevel(Level.WARN);
+    }
+
+    public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
                 .appName("IRProjectGaussianMixture")
                 .getOrCreate();

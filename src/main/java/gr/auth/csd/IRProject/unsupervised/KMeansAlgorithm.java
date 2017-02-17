@@ -15,16 +15,22 @@ import org.apache.spark.sql.SparkSession;
  * After identifying the data clusters, we use majority vote to determine which class it belongs to.
  */
 public class KMeansAlgorithm {
+    static String inputDirectory = "src/main/resources/w2vData";
+
+    static Logger logger;
+    static {
+        logger = LogManager.getRootLogger();
+        logger.setLevel(Level.WARN);
+    }
+
     public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/w2vData";
         SparkSession spark = SparkSession.builder()
                                          .appName("IRProjectKMeans")
                                          .getOrCreate();
-        Logger logger = LogManager.getRootLogger();
-        logger.setLevel(Level.WARN);
 
         Dataset<Row> data = spark.read().parquet(inputDirectory);
 
+        // 90-10% hold out validation
         Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 123321);
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
@@ -32,6 +38,7 @@ public class KMeansAlgorithm {
         KMeans kmeans = new KMeans().setFeaturesCol("w2vRes").setK(2).setSeed(2L);
         KMeansModel model = kmeans.fit(trainSet);
 
+        // Use spark temp SQL table in order to calculate accuracy.
         Dataset<Row> predictionsTest = model.transform(testSet);
         predictionsTest.registerTempTable("pred_test");
         Dataset<Row> predictionsTrain = model.transform(trainSet);
@@ -45,6 +52,7 @@ public class KMeansAlgorithm {
         double accuracyOnTestSet;
         double accuracyOnTrainSet;
 
+        // Use majority vote to assign clusters to classes
         if (samePrctTrain < 0.5) {
             accuracyOnTrainSet = 1 - samePrctTrain;
             accuracyOnTestSet = 1 - samePrctTest;
@@ -54,6 +62,7 @@ public class KMeansAlgorithm {
             accuracyOnTestSet = samePrctTest;
         }
 
+        // Print accuracy metrics, WSSE and cluster centers in DEBUG mode.
         logger.log(Level.WARN, String.format("Accuracy(Train): %f", accuracyOnTrainSet));
         logger.log(Level.WARN, String.format("Accuracy(Test): %f", accuracyOnTestSet));
 
