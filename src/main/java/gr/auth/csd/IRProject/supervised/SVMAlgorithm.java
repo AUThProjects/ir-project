@@ -21,25 +21,32 @@ import scala.Tuple2;
  * For more information, please refer to <a href="https://www.csie.ntu.edu.tw/~cjlin/libsvm/">libsvm website</a>.
  */
 public class SVMAlgorithm {
+    static String ioSVMDirectory = "src/main/resources/tfIdfData.svm";
+    static String outputDirectory = "src/main/resources/svmModel";
+    static Logger logger;
+    static {
+        logger = LogManager.getRootLogger();
+        logger.setLevel(Level.WARN);
+    }
     public static void main(String[] args) {
-        String ioSVMDirectory = "src/main/resources/tfIdfData.svm";
-        String outputDirectory = "src/main/resources/svmModel";
         SparkSession spark = SparkSession.builder()
                                          .appName("IRProjectSVM")
                                          .getOrCreate();
-        Logger logger = LogManager.getRootLogger();
-        logger.setLevel(Level.WARN);
 
         JavaRDD<LabeledPoint> svmData = MLUtils.loadLibSVMFile(spark.sparkContext(), ioSVMDirectory).toJavaRDD();
+
+        // 90-10% hold-out validation
         JavaRDD<LabeledPoint>[] datasets = svmData.randomSplit(new double[]{0.9,0.1}, 123321);
         JavaRDD<LabeledPoint> trainSet = datasets[0];
         JavaRDD<LabeledPoint> testSet = datasets[1];
 
+        // Train SVM.
         SVMWithSGD svm = new SVMWithSGD();
         svm.optimizer().setNumIterations(100).setRegParam(0.05).setUpdater(new L1Updater());
         SVMModel model = svm.run(trainSet.rdd());
         model.clearThreshold();
 
+        // Save SVM model.
         model.save(spark.sparkContext(), outputDirectory);
 
         // Compute raw scores on the test set.
