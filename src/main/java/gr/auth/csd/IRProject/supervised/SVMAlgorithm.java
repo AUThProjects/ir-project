@@ -11,25 +11,24 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics;
 import org.apache.spark.mllib.optimization.L1Updater;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.util.MLUtils;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
 /**
- * Created by steve on 03/01/2017.
+ * Trains and uses a Support Vector Machine in order to predict movie reviews' classes (positive, negative).
+ * Requires its training set to be loaded in libsvm format.
+ *
+ * For more information, please refer to <a href="https://www.csie.ntu.edu.tw/~cjlin/libsvm/">libsvm website</a>.
  */
 public class SVMAlgorithm {
     public static void main(String[] args) {
-        String inputDirectory = "src/main/resources/tfIdfData.json";
         String ioSVMDirectory = "src/main/resources/tfIdfData.svm";
         String outputDirectory = "src/main/resources/svmModel";
         SparkSession spark = SparkSession.builder()
-                .appName("IRProjectKMeans")
-                .getOrCreate();
+                                         .appName("IRProjectSVM")
+                                         .getOrCreate();
         Logger logger = LogManager.getRootLogger();
         logger.setLevel(Level.WARN);
-        Dataset<Row> data = spark.read().parquet(inputDirectory);
 
         JavaRDD<LabeledPoint> svmData = MLUtils.loadLibSVMFile(spark.sparkContext(), ioSVMDirectory).toJavaRDD();
         JavaRDD<LabeledPoint>[] datasets = svmData.randomSplit(new double[]{0.9,0.1}, 123321);
@@ -54,12 +53,9 @@ public class SVMAlgorithm {
         );
 
         // Get evaluation metrics.
-        BinaryClassificationMetrics metrics =
-                new BinaryClassificationMetrics(JavaRDD.toRDD(scoreAndLabels));
+        BinaryClassificationMetrics metrics = new BinaryClassificationMetrics(JavaRDD.toRDD(scoreAndLabels));
         double auROC = metrics.areaUnderROC();
 
-        System.out.println("Area under ROC = " + auROC);
+        logger.log(Level.WARN, "Area under ROC = " + auROC);
     }
-
-
 }
