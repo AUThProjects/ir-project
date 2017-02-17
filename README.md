@@ -79,3 +79,7 @@ spark-submit --class gr.auth.csd.IRProject.unsupervised.LDAAlgorithm ./target/sc
 ```
 spark-submit --class gr.auth.csd.IRProject.unsupervised.GaussianMixtureAlgorithm ./target/scala-2.11/ir-project-assembly-1.0.jar
 ```
+
+## Results
+
+The results of our predictions are located under `results/predictions.txt`.
