@@ -10,7 +10,11 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-public class KmeansAlgorithm {
+/**
+ * Uses the KMeans Algorithm to predict the class (positive, negative) of the movie reviews.
+ * After identifying the data clusters, we use majority vote to determine which class it belongs to.
+ */
+public class KMeansAlgorithm {
     public static void main(String[] args) {
         String inputDirectory = "src/main/resources/w2vData";
         SparkSession spark = SparkSession.builder()
@@ -38,7 +42,6 @@ public class KmeansAlgorithm {
         double samePrctTrain = sameTrain/predictionsTrain.count();
         double samePrctTest = sameTest/predictionsTest.count();
 
-
         double accuracyOnTestSet;
         double accuracyOnTrainSet;
 
@@ -54,11 +57,9 @@ public class KmeansAlgorithm {
         logger.log(Level.WARN, String.format("Accuracy(Train): %f", accuracyOnTrainSet));
         logger.log(Level.WARN, String.format("Accuracy(Test): %f", accuracyOnTestSet));
 
-
         double WSSSE = model.computeCost(data);
         logger.log(Level.WARN, "Within Set Sum of Squared Errors = " + WSSSE);
 
-        // Shows the result.
         Vector[] centers = model.clusterCenters();
         logger.log(Level.DEBUG, "Cluster Centers: ");
         for (Vector center: centers) {

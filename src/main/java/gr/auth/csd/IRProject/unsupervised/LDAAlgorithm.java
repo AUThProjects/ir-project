@@ -1,12 +1,11 @@
 package gr.auth.csd.IRProject.unsupervised;
 
+import java.io.IOException;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.ml.clustering.GaussianMixture;
-import org.apache.spark.ml.clustering.GaussianMixtureModel;
 import org.apache.spark.ml.clustering.LDA;
 import org.apache.spark.ml.clustering.LDAModel;
 import org.apache.spark.sql.Dataset;
@@ -14,10 +13,9 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import java.io.IOException;
-
 /**
- * Created by steve on 09/01/2017.
+ * Uses the Latent Dirichlet Allocation Algorithm to predict the class (positive, negative) of the movie reviews.
+ * After identifying the data clusters, we use majority vote to determine which class it belongs to.
  */
 public class LDAAlgorithm {
     public static void main(String[] args) {
@@ -30,13 +28,11 @@ public class LDAAlgorithm {
         Logger logger = LogManager.getRootLogger();
         logger.setLevel(Level.WARN);
 
-
         Dataset<Row> data = spark.read().parquet(inputDirectory);
 
         Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 123321);
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
-
 
         LDA lda = new LDA().setFeaturesCol("w2vRes").setK(2).setMaxIter(50); //.setOptimizer("online");
         LDAModel model = lda.fit(trainSet);
@@ -47,10 +43,10 @@ public class LDAAlgorithm {
             logger.log(Level.ERROR, e.getMessage());
         }
 
-//        double ll = model.logLikelihood(trainSet);
-//        double lp = model.logPerplexity(trainSet);
-//        System.out.println("The lower bound on the log likelihood of the entire corpus: " + ll);
-//        System.out.println("The upper bound bound on perplexity: " + lp);
+        double ll = model.logLikelihood(trainSet);
+        double lp = model.logPerplexity(trainSet);
+        logger.log(Level.DEBUG, "The lower bound on the log likelihood of the entire corpus: " + ll);
+        logger.log(Level.DEBUG, "The upper bound bound on perplexity: " + lp);
 
         try {
             model.save(outputDirectory);
@@ -59,7 +55,6 @@ public class LDAAlgorithm {
             logger.log(Level.ERROR, e.getMessage());
         }
 
-        // Shows the result.
         Dataset<Row> predictionsTest = model.transform(testSet);
         Dataset<Row> predictionsTrain = model.transform(trainSet);
 
@@ -83,7 +78,6 @@ public class LDAAlgorithm {
         double sameTrain = resultsTrain.where("value=1").count();
         double samePrctTrain = sameTrain/predictionsTrain.count();
         double samePrctTest = sameTest/predictionsTest.count();
-
 
         double accuracyOnTestSet;
         double accuracyOnTrainSet;

@@ -23,5 +23,5 @@ spark-submit --class gr.auth.csd.IRProject.supervised.LRAlgorithm ./target/scala
 #### K-means
 
 ```
-spark-submit --class gr.auth.csd.IRProject.unsupervised.KmeansAlgorithm ./target/scala-2.11/ir-project-assembly-1.0.jar
+spark-submit --class gr.auth.csd.IRProject.unsupervised.KMeansAlgorithm ./target/scala-2.11/ir-project-assembly-1.0.jar
 ```

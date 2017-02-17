@@ -1,18 +1,19 @@
 package gr.auth.csd.IRProject.unsupervised;
 
+import java.io.IOException;
+
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.spark.ml.clustering.*;
-import org.apache.spark.ml.linalg.Vector;
+import org.apache.log4j.LogManager;
+import org.apache.spark.ml.clustering.GaussianMixture;
+import org.apache.spark.ml.clustering.GaussianMixtureModel;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import java.io.IOException;
-
 /**
- * Created by steve on 09/01/2017.
+ * Uses the Gaussian Mixture Algorithm to predict the class (positive, negative) of the movie reviews.
+ * After identifying the data clusters, we use majority vote to determine which class it belongs to.
  */
 public class GaussianMixtureAlgorithm {
     public static void main(String[] args) {
@@ -20,18 +21,16 @@ public class GaussianMixtureAlgorithm {
         String outputDirectory = "src/main/resources/GaussianMixtureModel";
 
         SparkSession spark = SparkSession.builder()
-                .appName("IRProjectKMeans")
+                .appName("IRProjectGaussianMixture")
                 .getOrCreate();
         Logger logger = LogManager.getRootLogger();
         logger.setLevel(Level.WARN);
-
 
         Dataset<Row> data = spark.read().parquet(inputDirectory);
 
         Dataset<Row>[] datasets = data.randomSplit(new double[]{0.9,0.1}, 123321);
         Dataset<Row> trainSet = datasets[0];
         Dataset<Row> testSet = datasets[1];
-
 
         GaussianMixture gmm = new GaussianMixture().setFeaturesCol("w2vRes").setK(2);
         GaussianMixtureModel model = gmm.fit(trainSet);
@@ -43,7 +42,6 @@ public class GaussianMixtureAlgorithm {
             logger.log(Level.ERROR, e.getMessage());
         }
 
-        // Shows the result.
         Dataset<Row> predictionsTest = model.transform(testSet);
         predictionsTest.registerTempTable("pred_test");
         Dataset<Row> predictionsTrain = model.transform(trainSet);
@@ -53,7 +51,6 @@ public class GaussianMixtureAlgorithm {
         double sameTrain = spark.sql("select * from pred_train where label=prediction").count();
         double samePrctTrain = sameTrain/predictionsTrain.count();
         double samePrctTest = sameTest/predictionsTest.count();
-
 
         double accuracyOnTestSet;
         double accuracyOnTrainSet;
