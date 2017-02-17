@@ -5,14 +5,24 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Created by steve on 15/02/2017.
+ * Preprocess raw files in order to alter TF weights according to dictionary.
+ * Non-spark class.
  */
-public class Preprocessing {
+public class DictPreprocessing {
+
+    static String dictionaryPath = "./src/main/resources/senticnet4.txt";
+    static String inputRootDirectory = "./src/main/resources/data";
+
+    /**
+     * Execution entrypoint.
+     * @param args CLI arguments
+     */
     public static void main(String[] args) {
-        String dictionaryPath = "./src/main/resources/senticnet4.txt";
+        // Read dictionary to main memory
         HashMap<String, Double> dictionary = readDictionary(dictionaryPath);
         Set<String> keys = dictionary.keySet();
-        String inputRootDirectory = "./src/main/resources/data";
+
+        // Append relevant strong terms in each file
         File inputRootDirectoryFile = new File(inputRootDirectory);
         Collection<File> files = FileUtils.listFiles(inputRootDirectoryFile, new String[]{"txt"}, true);
         for (File file : files) {
@@ -21,6 +31,11 @@ public class Preprocessing {
         }
     }
 
+    /**
+     * Method returning how many words to append according to word polarity.
+     * @param weight The word's polarity
+     * @return Number of words to append
+     */
     public static int numberOfWordsToAppend(double weight) {
         if (weight < 0.65) {
             return 0;
@@ -42,7 +57,14 @@ public class Preprocessing {
         }
     }
 
-    public static HashMap<String, Integer> appendToFile(String path, HashMap<String, Double> dictionary, Set<String> keys) {
+    /**
+     * Append words to file.
+     * @param path The path of the file to append to
+     * @param dictionary The dictionary read into main memory
+     * @param keys The key set of the dictionary
+     * @return
+     */
+    public static void appendToFile(String path, HashMap<String, Double> dictionary, Set<String> keys) {
         System.out.printf("Appending to file: %s\n", path);
         BufferedReader br = null;
         Set<String> words = new HashSet<>();
@@ -68,7 +90,7 @@ public class Preprocessing {
             }
         }
 
-        HashMap<String, Integer> toBeReturned = new HashMap<>();
+        // Take intersection
         words.retainAll(keys);
 
         BufferedWriter bw = null;
@@ -91,11 +113,13 @@ public class Preprocessing {
                 e.printStackTrace();
             }
         }
-
-
-        return toBeReturned;
     }
 
+    /**
+     * Method reading dictionary into main memory.
+     * @param path Path of the dictionary file
+     * @return A hashmap with K: word, V: polarity
+     */
     public static HashMap<String, Double> readDictionary(String path) {
         System.out.printf("Building dictionary");
         HashMap<String, Double> toBeReturned = new HashMap<>();
