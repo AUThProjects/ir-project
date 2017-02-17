@@ -2,6 +2,16 @@
 
 This is a repository for the project in the course of Information Retrieval, of 7th semester.
 
+## How to build
+
+From the root directory of the project, run:
+
+```
+sbt assembly
+```
+
+This will create a "fat" jar under the directory `target/scala_2.11/`, which has all the dependencies included.
+
 ## How to run
 
 There are multiple different paths to take:
@@ -32,7 +42,7 @@ you must already have run the preprocessing python scripts to produce the json w
 spark-submit --class gr.auth.csd.IRProject.IRProjectApp ./target/scala-2.11/ir-project-assembly-1.0.jar
 ```
 
-### Running the Word2Vec dimensionality Reduction
+### Running the Word2Vec Dimensionality Reduction
 
 After the vector model (TF-IDF) analysis, you can run the Word2Vec class in order to reduce the available features.
 
